@@ -39,7 +39,6 @@ CFLAGS = \
 	-Wpointer-arith \
 	-Wvla \
 	-std=c++17 \
-	-march=native \
 	-mcx16 \
 	$(OPT) \
 	$(INTT) \
