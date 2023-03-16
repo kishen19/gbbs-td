@@ -760,5 +760,10 @@ inline size_t filter(P pred, uchar* edge_start, const uintE& source,
   return 0;
 }
 
+template <class W, class P>
+inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree){
+  return sequence<uintE>::uninitialized(degree);
+}
+
 }  // namespace bytepd
 }  // namespace gbbs

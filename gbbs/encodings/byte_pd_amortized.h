@@ -1103,6 +1103,11 @@ inline void filter(P pred, uchar* edge_start, const uintE& source,
   }
 }
 
+template <class W, class P>
+inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree){
+  return sequence<uintE>::uninitialized(degree);
+}
+
 template <class W, class I>
 inline long sequentialCompressEdgeSet(uchar* edgeArray, size_t current_offset,
                                       uintT degree, uintE source, I& it,

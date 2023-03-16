@@ -14,26 +14,6 @@ namespace gbbs {
 namespace {
 
 template <class Graph>
-double Treewidth_runner(Graph& G, commandLine P) {
-	std::cout << "### Application: Tree Decomposition" << std::endl;
-	std::cout << "### Graph: " << P.getArgument(0) << std::endl;
-	std::cout << "### Threads: " << num_workers() << std::endl;
-	std::cout << "### n: " << G.n << std::endl;
-	std::cout << "### m: " << G.m << std::endl;
-	std::cout << "### ------------------------------------" << std::endl;
-	assert(P.getOption("-s"));
-
-	timer t;
-	t.start();
-	auto width = GavrilTreewidth(G);
-	double tt = t.stop();
-
-	std::cout << "### Width: " << width << std::endl;
-	std::cout << "### Running Time: " << tt << std::endl;
-	return tt;
-}
-
-template <class Graph>
 double TreeDecomp_runner(Graph& G, commandLine P) {
 	std::cout << "### Application: Tree Decomposition" << std::endl;
 	std::cout << "### Graph: " << P.getArgument(0) << std::endl;
@@ -45,7 +25,7 @@ double TreeDecomp_runner(Graph& G, commandLine P) {
 
 	timer t;
 	t.start();
-	auto width = GavrilTreeDecomp(G);
+	auto width = TreeDecompEfficient(G);
 	double tt = t.stop();
 
 	std::cout << "### Width: " << width << std::endl;
@@ -56,5 +36,4 @@ double TreeDecomp_runner(Graph& G, commandLine P) {
 }  // namespace
 }  // namespace gbbs
 
-generate_main(gbbs::Treewidth_runner, false);
-// generate_main(gbbs::TreeDecomp_runner, false);
+generate_main(gbbs::TreeDecomp_runner, false);
