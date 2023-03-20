@@ -211,25 +211,29 @@ struct uncompressed_neighbors {
   }
 
   // Expects that out has enough space to hold the output of the filter
+  // p(uintE& id, uintE& v) = T/F
   template <class P>
   inline sequence<uintE> filter2(P p){
-    auto out = sequence<uintE>::uninitialized(degree);
-    if (degree < vertex_ops::kAllocThreshold) {
+    if (degree < vertex_ops::kAllocThreshold){
       size_t k = 0;
+      auto out = sequence<uintE>::uninitialized(degree);
       for (size_t i = 0; i < degree; i++) {
         auto nw = neighbors[i];
-        if (p(id, std::get<0>(nw), std::get<1>(nw))) {
+        if (p(id, std::get<0>(nw))) {
           out[k++] = std::get<0>(nw);
         }
       }
+      return out;
     } else {
-      auto pc = [&](const std::tuple<uintE, W>& nw) {
-        return p(id, std::get<0>(nw), std::get<1>(nw));
+      auto pc = [&](const uintE& v) {
+        return p(id, v);
       };
-      auto in_im = gbbs::make_slice(neighbors, degree);
-      auto k = parlay::filter_out(in_im, out, pc);
+      auto in_im = parlay::tabulate(degree, [&](size_t i){
+        return std::get<0>(neighbors[i]);
+      });
+      auto out = parlay::filter(in_im, pc);
+      return out;
     }
-    return out;
   }
 
   // Caller is responsible for setting the degree on the vertex object enclosing

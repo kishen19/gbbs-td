@@ -8,16 +8,34 @@
 
 namespace gbbs {
 
-#define RMINDEG 0
-#define RMINFILL 1
-#define MCS 2
-#define MCS_M 3
-#define NDD 4
-#define ALL 5
+#define DEGSORT 0
+#define RMINDEG 1
+#define RMINFILL 2
+#define MCS 3
+#define MCS_M 4
+#define NDD 5
+#define ALL 6
+
+void printOut(sequence<size_t> max_width, sequence<double> mean_width, sequence<size_t> median_width){
+	std::string names[ALL] = {"Sorted Degrees", "R-Mindeg", "R-Minfill", "MCS", "MCS-M", "NDD"};
+	std::cout << std::endl;
+	for (auto i=0; i< ALL; i++){
+		std::cout << "=> " << names[i] << ": Max Bag Size = " << max_width[i] << ", Mean Bag Size = " << mean_width[i] 
+		<< ", Median Bag Size = " << median_width[i] << std::endl;
+	}
+	std::cout << std::endl;
+}
 
 template <class Graph>
 sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
-	if (order_heuristic == RMINDEG)
+	auto n = GA.n;
+
+	if (order_heuristic == DEGSORT){
+		auto sort_f = [&](uintE v){return GA.get_vertex(v).out_degree();};
+		auto order = parlay::tabulate(n, [&](uintE i){return i;});
+		parlay::integer_sort_inplace(order, sort_f);
+		return order;
+	} else if (order_heuristic == RMINDEG)
 		return DegeneracyOrder(GA);
 	else if (order_heuristic == RMINFILL)
 		return minfill(GA);
@@ -28,18 +46,7 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
 	else if (order_heuristic == NDD)
 		return DegeneracyOrder(GA);
 	else
-		return parlay::tabulate(GA.n,[&](uintE i){return i;});
-}
-
-void printOut(sequence<size_t> max_width, sequence<size_t> mean_width, sequence<size_t> median_width){
-	std::cout << "### MINDEG: Max Bag Size = " << max_width[0] << ", Mean Bag Size = " << mean_width[0] 
-	<< ", Median Bag Size = " << median_width[0] << std::endl;
-	std::cout << "### MINFILL: Max Bag Size = " << max_width[1] << ", Mean Bag Size = " << mean_width[1] 
-	<< ", Median Bag Size = " << median_width[1] << std::endl;
-	std::cout << "### MCS: Max Bag Size = " << max_width[2] << ", Mean Bag Size = " << mean_width[2] 
-	<< ", Median Bag Size = " << median_width[2] << std::endl;
-	std::cout << "### MCS-M: Max Bag Size = " << max_width[3] << ", Mean Bag Size = " << mean_width[3] 
-	<< ", Median Bag Size = " << median_width[3] << std::endl;
+		return parlay::tabulate(n, [&](uintE i){return i;});
 }
 
 template <class Graph>
@@ -49,18 +56,19 @@ size_t TreeDecompEfficient(Graph& GA, int order_heuristic=ALL){
 
 	if (order_heuristic == ALL){
 		auto max_width = sequence<size_t>(ALL);
-		// auto mean_width = sequence<double>(ALL);
-		// auto median_width = sequence<uintE>(ALL);
+		auto mean_width = sequence<double>(ALL);
+		auto median_width = sequence<size_t>(ALL);
 		parallel_for(0, ALL, [&](size_t heuristic){
 			auto pi = Ordering(GA, heuristic);
 			auto T = sequence<uintE>::uninitialized(n);
 			auto B = sequence<sequence<uintE>>::uninitialized(n);
-			size_t tw = GavrilTreeDecomp(GA, pi, B, T);
+			auto bag_size = sequence<size_t>::uninitialized(n);
+			size_t tw = GavrilTreeDecomp(GA, pi, B, T, bag_size);
 			max_width[heuristic] = tw;
-			// mean_width[heuristic-1] = (double)parlay::reduce(bag_size)/n;
-			// median_width[heuristic-1] = *parlay::kth_smallest(bag_size,n/2);
+			mean_width[heuristic] = (double)parlay::reduce(bag_size)/n;
+			median_width[heuristic] = *parlay::kth_smallest(bag_size,n/2);
 		});
-		printOut(max_width, max_width, max_width); //TODO: median and mean width
+		printOut(max_width, mean_width, median_width);
 		treewidth = parlay::reduce_min(max_width);
 	}
 	else{
@@ -68,12 +76,13 @@ size_t TreeDecompEfficient(Graph& GA, int order_heuristic=ALL){
 		auto pi = Ordering(GA, order_heuristic);
 		auto T = sequence<uintE>::uninitialized(n);
 		auto B = sequence<sequence<uintE>>::uninitialized(n);
-		size_t tw = GavrilTreeDecomp(GA, pi, B, T);
+		auto bag_size = sequence<size_t>::uninitialized(n);
+		size_t tw = GavrilTreeDecomp(GA, pi, B, T, bag_size);
 		max_width = tw;
-		mean_width = tw; // (double)parlay::reduce(bag_size)/n;
-		median_width = tw; // *parlay::kth_smallest(bag_size,n/2);
+		mean_width = (double)parlay::reduce(bag_size)/n;
+		median_width = *parlay::kth_smallest(bag_size,n/2);
 
-		std::cout << "### "<< order_heuristic << ": Max Bag Size = " << max_width << ", Mean Bag Size = " 
+		std::cout << "=> "<< order_heuristic << ": Max Bag Size = " << max_width << ", Mean Bag Size = " 
 		<< mean_width << ", Median Bag Size = " << median_width << std::endl;
 		treewidth = max_width;
 	}
