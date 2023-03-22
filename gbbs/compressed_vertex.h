@@ -101,8 +101,8 @@ struct compressed_neighbors {
   }
 
   template <class P>
-  inline sequence<uintE> filter2(P& pred) {
-    return C::template filter2<W, P>(pred, neighbors, id, degree);
+  inline sequence<uintE> filter2(P& pred, size_t num) {
+    return C::template filter2<W, P>(pred, num, neighbors, id, degree);
   }
 
   template <class P>

@@ -761,7 +761,7 @@ inline size_t filter(P pred, uchar* edge_start, const uintE& source,
 }
 
 template <class W, class P>
-inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree){
+inline sequence<uintE> filter2(P pred, size_t num, uchar* edge_start, const uintE& source, const uintE& degree){
   return sequence<uintE>::uninitialized(degree);
 }
 

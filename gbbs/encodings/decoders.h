@@ -78,8 +78,8 @@ struct byte_decode {
   }
   
   template <class W, class P>
-  static inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree) {
-    return byte::filter2<W,P>(pred, edge_start, source, degree);
+  static inline sequence<uintE> filter2(P pred, size_t num, uchar* edge_start, const uintE& source, const uintE& degree) {
+    return byte::filter2<W,P>(pred, num, edge_start, source, degree);
   }
 
   template <class W, class P>
@@ -157,8 +157,8 @@ struct bytepd_decode {
   }
 
   template <class W, class P>
-  static inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree) {
-    return bytepd::filter2<W,P>(pred, edge_start, source, degree);
+  static inline sequence<uintE> filter2(P pred, size_t num, uchar* edge_start, const uintE& source, const uintE& degree) {
+    return bytepd::filter2<W,P>(pred, num, edge_start, source, degree);
   }
 
   template <class W, class P>
@@ -250,8 +250,8 @@ struct bytepd_amortized_decode {
   }
 
   template <class W, class P>
-  static inline sequence<uintE> filter2(P pred, uchar* edge_start, const uintE& source, const uintE& degree) {
-    return bytepd_amortized::filter2<W,P>(pred, edge_start, source, degree);
+  static inline sequence<uintE> filter2(P pred, size_t num, uchar* edge_start, const uintE& source, const uintE& degree) {
+    return bytepd_amortized::filter2<W,P>(pred, num, edge_start, source, degree);
   }
 
   template <class W, class P>

@@ -3,8 +3,9 @@
 #include "benchmarks/KCore/JulienneDBS17/KCore.h"
 #include "gbbs/gbbs.h"
 #include "TreeDecomp/gavril.h"
-#include "TreeDecomp/minfill.h"
-#include "TreeDecomp/mcs.h"
+#include "TreeDecomp/efficientTD.h"
+#include "TreeDecomp/orderings/minfill.h"
+#include "TreeDecomp/orderings/mcs.h"
 
 namespace gbbs {
 
@@ -51,6 +52,50 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
 
 template <class Graph>
 size_t TreeDecompEfficient(Graph& GA, int order_heuristic=ALL){
+	using W = typename Graph::weight_type;
+	size_t n = GA.n, treewidth;
+
+	if (order_heuristic == ALL){
+		auto max_width = sequence<size_t>(ALL);
+		auto mean_width = sequence<double>(ALL);
+		auto median_width = sequence<size_t>(ALL);
+		parallel_for(0, ALL, [&](size_t heuristic){
+			auto pi = Ordering(GA, heuristic);
+			auto T = sequence<uintE>::uninitialized(n);
+			auto B = sequence<sequence<uintE>>::uninitialized(n);
+			auto B_new = sequence<std::set<uintE>>(n);
+			auto bag_size = sequence<size_t>::uninitialized(n);
+			auto bag_size_new = sequence<size_t>::uninitialized(n);
+			size_t tw = EfficientTreeDecomp(GA, pi, B, T, bag_size, B_new, bag_size_new);
+			max_width[heuristic] = tw;
+			mean_width[heuristic] = (double)parlay::reduce(bag_size_new)/n;
+			median_width[heuristic] = *parlay::kth_smallest(bag_size_new,n/2);
+		});
+		printOut(max_width, mean_width, median_width);
+		treewidth = parlay::reduce_min(max_width);
+	}
+	else{
+		size_t max_width, mean_width, median_width;
+		auto pi = Ordering(GA, order_heuristic);
+		auto T = sequence<uintE>::uninitialized(n);
+		auto B = sequence<sequence<uintE>>::uninitialized(n);
+		auto B_new = sequence<std::set<uintE>>(n);
+		auto bag_size = sequence<size_t>::uninitialized(n);
+		auto bag_size_new = sequence<size_t>::uninitialized(n);
+		size_t tw = EfficientTreeDecomp(GA, pi, B, T, bag_size, B_new, bag_size_new);
+		max_width = tw;
+		mean_width = (double)parlay::reduce(bag_size_new)/n;
+		median_width = *parlay::kth_smallest(bag_size_new,n/2);
+
+		std::cout << "=> "<< order_heuristic << ": Max Bag Size = " << max_width << ", Mean Bag Size = " 
+		<< mean_width << ", Median Bag Size = " << median_width << std::endl;
+		treewidth = max_width;
+	}
+	return treewidth;
+}
+
+template <class Graph>
+size_t TreeDecompGavril(Graph& GA, int order_heuristic=ALL){
 	using W = typename Graph::weight_type;
 	size_t n = GA.n, treewidth;
 

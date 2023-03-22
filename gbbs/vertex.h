@@ -213,10 +213,10 @@ struct uncompressed_neighbors {
   // Expects that out has enough space to hold the output of the filter
   // p(uintE& id, uintE& v) = T/F
   template <class P>
-  inline sequence<uintE> filter2(P p){
+  inline sequence<uintE> filter2(P p, size_t num){
     if (degree < vertex_ops::kAllocThreshold){
       size_t k = 0;
-      auto out = sequence<uintE>::uninitialized(degree);
+      auto out = sequence<uintE>::uninitialized(num);
       for (size_t i = 0; i < degree; i++) {
         auto nw = neighbors[i];
         if (p(id, std::get<0>(nw))) {
