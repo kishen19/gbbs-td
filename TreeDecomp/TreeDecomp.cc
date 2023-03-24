@@ -15,6 +15,7 @@ namespace {
 
 template <class Graph>
 double TreeDecomp_runner(Graph& G, commandLine P) {
+	int heuristic = P.getOptionDoubleValue("-o", ALL);
 	std::cout << "### Application: Tree Decomposition" << std::endl;
 	std::cout << "### Graph: " << P.getArgument(0) << std::endl;
 	std::cout << "### Threads: " << num_workers() << std::endl;
@@ -25,7 +26,7 @@ double TreeDecomp_runner(Graph& G, commandLine P) {
 
 	timer t;
 	t.start();
-	auto width = TreeDecompEfficient(G);
+	auto width = TreeDecompEfficient(G, heuristic);
 	double tt = t.stop();
 
 	std::cout << "### Width: " << width << std::endl;
