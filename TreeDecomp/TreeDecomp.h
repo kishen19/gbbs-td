@@ -4,21 +4,23 @@
 #include "gbbs/gbbs.h"
 #include "TreeDecomp/gavril.h"
 #include "TreeDecomp/efficientTD.h"
+#include "TreeDecomp/orderings/mindeg.h"
 #include "TreeDecomp/orderings/minfill.h"
 #include "TreeDecomp/orderings/mcs.h"
 
 namespace gbbs {
 
 #define DEGSORT 0
-#define RMINDEG 1
-#define RMINFILL 2
-#define MCS 3
-#define MCS_M 4
-#define NDD 5
-#define ALL 6
+#define MINDEG 1
+#define RMINDEG 2
+#define RMINFILL 3
+#define MCS 4
+#define MCS_M 5
+#define NDD 6
+#define ALL 7
 
 void printOut(sequence<size_t> max_width, sequence<double> mean_width, sequence<size_t> median_width){
-	std::string names[ALL] = {"Sorted Degrees", "R-Mindeg", "R-Minfill", "MCS", "MCS-M", "NDD"};
+	std::string names[ALL] = {"Sorted Degrees", "Mindeg", "R-Mindeg", "R-Minfill", "MCS", "MCS-M", "NDD"};
 	std::cout << std::endl;
 	for (auto i=0; i< ALL; i++){
 		std::cout << "=> " << names[i] << ": Max Bag Size = " << max_width[i] << ", Mean Bag Size = " << mean_width[i] 
@@ -36,6 +38,8 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
 		auto order = parlay::tabulate(n, [&](uintE i){return i;});
 		parlay::integer_sort_inplace(order, sort_f);
 		return order;
+	} else if (order_heuristic == MINDEG){
+		return mindegree(GA);
 	} else if (order_heuristic == RMINDEG)
 		return DegeneracyOrder(GA);
 	else if (order_heuristic == RMINFILL)

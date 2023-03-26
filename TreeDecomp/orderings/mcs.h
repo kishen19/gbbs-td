@@ -1,5 +1,4 @@
 #include "gbbs/gbbs.h"
-// #include "BFS/NonDeterministicBFS/BFS.h"
 
 namespace gbbs{
 
@@ -21,7 +20,7 @@ sequence<uintE> mcs(Graph& GA){
       if (w[v] > 0)
         w[v]++;
 		};
-		GA.get_vertex(next).out_neighbors().map(map_f, true);  // run map sequentially
+		GA.get_vertex(next).out_neighbors().map(map_f);
 		w[next] = 0;
 	}
 	return order;
