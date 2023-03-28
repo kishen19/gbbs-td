@@ -13,14 +13,17 @@ namespace gbbs {
 #define DEGSORT 0
 #define MINDEG 1
 #define RMINDEG 2
-#define RMINFILL 3
-#define MCS 4
-#define MCS_M 5
-#define NDD 6
-#define ALL 7
+#define MINFILL 3 // TODO
+#define RMINFILL 4
+#define LEXBFS 5 // TODO
+#define LEX_M 6 //TODO
+#define MCS 7
+#define MCS_M 8
+#define NDD 9 // TODO
+#define ALL 10
 
 void printOut(sequence<size_t> max_width, sequence<double> mean_width, sequence<size_t> median_width){
-	std::string names[ALL] = {"Sorted Degrees", "Mindeg", "R-Mindeg", "R-Minfill", "MCS", "MCS-M", "NDD"};
+	std::string names[ALL] = {"Sorted Degrees", "Mindeg", "R-Mindeg", "Minfill", "R-Minfill", "Lex-BFS", "Lex-M", "MCS", "MCS-M", "NDD"};
 	std::cout << std::endl;
 	for (auto i=0; i< ALL; i++){
 		std::cout << "=> " << names[i] << ": Max Bag Size = " << max_width[i] << ", Mean Bag Size = " << mean_width[i] 
@@ -40,18 +43,25 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
 		return order;
 	} else if (order_heuristic == MINDEG){
 		return mindegree(GA);
-	} else if (order_heuristic == RMINDEG)
+	} else if (order_heuristic == RMINDEG){
 		return DegeneracyOrder(GA);
-	else if (order_heuristic == RMINFILL)
+	} else if (order_heuristic == MINFILL){ // TODO
 		return minfill(GA);
-	else if (order_heuristic == MCS)
+	} else if (order_heuristic == RMINFILL){
+		return rminfill(GA);
+	} else if (order_heuristic == LEXBFS){ //TODO
 		return mcs(GA);
-	else if (order_heuristic == MCS_M)
+	} else if (order_heuristic == LEX_M){ //TODO
+		return mcs(GA);
+	} else if (order_heuristic == MCS){
+		return mcs(GA);
+	} else if (order_heuristic == MCS_M){
 		return mcs_m(GA);
-	else if (order_heuristic == NDD)
+	} else if (order_heuristic == NDD){ // TODO
 		return DegeneracyOrder(GA);
-	else
+	} else{
 		return parlay::tabulate(n, [&](uintE i){return i;});
+	}
 }
 
 template <class Graph>

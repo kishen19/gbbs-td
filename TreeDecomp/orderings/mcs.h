@@ -36,12 +36,12 @@ struct BFS_F {
     return updateAtomic(s, d, w);
   }
   inline bool updateAtomic(uintE s, uintE d, W w){
-	uintE oldW, newW = std::max(weights[s], mcs_weights[s]);
-	do {
-		oldW = weights[d];
-		if (oldW <= newW)
-			return 0;
-	} while (!gbbs::atomic_compare_and_swap(&weights[d], oldW, newW));
+    uintE oldW, newW = std::max(weights[s], mcs_weights[s]);
+    do {
+      oldW = weights[d];
+      if (oldW <= newW)
+        return 0;
+    } while (!gbbs::atomic_compare_and_swap(&weights[d], oldW, newW));
     return 1;
   }
   inline bool cond(uintE d) {return (mcs_weights[d] == UINT_E_MAX); }
