@@ -13,7 +13,7 @@ namespace gbbs {
 #define DEGSORT 0
 #define MINDEG 1
 #define RMINDEG 2
-#define MINFILL 3 // TODO
+#define MINFILL 3
 #define RMINFILL 4
 #define LEXBFS 5 // TODO
 #define LEX_M 6 //TODO
@@ -76,7 +76,7 @@ size_t TreeDecompEfficient(Graph& GA, int order_heuristic=ALL){
 		parallel_for(0, ALL, [&](size_t heuristic){
 			auto pi = Ordering(GA, heuristic);
 			auto T = sequence<uintE>::uninitialized(n);
-			auto B = sequence<sequence<uintE>>::uninitialized(n);
+			auto B = sequence<sequence<uintE>>(n);
 			auto B_new = sequence<std::set<uintE>>(n);
 			auto bag_size = sequence<size_t>::uninitialized(n);
 			auto bag_size_new = sequence<size_t>::uninitialized(n);

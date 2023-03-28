@@ -2,3 +2,6 @@
 	path = external/parlaylib
   url = https://github.com/ParAlg/parlaylib
   branch = bazel_v2
+[submodule "external/ligra"]
+	path = external/ligra
+	url = https://github.com/jshun/ligra.git

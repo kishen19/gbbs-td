@@ -1,6 +1,6 @@
 include ../makefile.variables
 
-INCLUDE_DIRS = -I../ -I../external/parlaylib/include/
+INCLUDE_DIRS = -I../ -I../external/parlaylib/include/ -I../external/ligra/
 
 OBJDIR = ../bin/gbbs/
 
