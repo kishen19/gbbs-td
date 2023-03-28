@@ -10,9 +10,7 @@ template <class Graph>
 size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uintE>>& B, sequence<uintE>& T, sequence<size_t>& bag_size, sequence<std::set<uintE>>& B_new, sequence<size_t>& bag_size_new){
     using W = typename Graph::weight_type;
 	size_t n = GA.n;
-
-    auto tw_ = GavrilTreeDecomp(GA,pi, B, T, bag_size);
-
+    GavrilTreeDecomp(GA, pi, B, T, bag_size);
 	auto pi_inv = sequence<uintE>::uninitialized(n+1);
     parallel_for(0, n, [&](size_t i) {pi_inv[pi[i]] = i;});
     pi_inv[n] = n;
@@ -25,10 +23,10 @@ size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uin
     for (size_t i=0; i<n; i++){ //index i
         auto v = pi[i]; // vertex at index i
         if (bag_size_new[v]>0){
-            for(auto it = ++B_new[v].begin(); it != B_new[v].end(); it++){
+            for(auto it = B_new[v].begin(); it != B_new[v].end(); it++){
                 auto cur = T[v];
                 auto w = *it;
-                while(cur != n && w!=n && B_new[cur].find(w)==B_new[cur].end()){
+                while(cur != n && w!=n && w!= cur && B_new[cur].find(w)==B_new[cur].end()){
                     B_new[cur].insert(w);
                     bag_size_new[cur]++;
                     if (pi_inv[w] < pi_inv[T[cur]]){

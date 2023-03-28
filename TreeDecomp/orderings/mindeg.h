@@ -159,7 +159,7 @@ sequence<uintE> mindegree(Graph& GA){
   using W = typename Graph::weight_type;
   size_t n = GA.n;
   // if (G_copy == nullptr){
-  auto G_copy = sequence<sequence<uintE>>::uninitialized(n);
+  auto G_copy = sequence<sequence<uintE>>(n);
   parallel_for(0, n, [&](uintE i){
     G_copy[i] = sequence<uintE>::uninitialized(GA.get_vertex(i).out_degree());
     auto map_f = [&](uintE u, uintE v, W w, size_t j){
@@ -189,6 +189,8 @@ sequence<uintE> mindegree(Graph& GA){
     });
     degree[next] = UINT_E_MAX;
   }
+  auto bagsize = parlay::tabulate(n,[&](uintE i){return G_copy[i].size();});
+  auto mxtw = parlay::reduce_max(bagsize);
   return order;
 }
 

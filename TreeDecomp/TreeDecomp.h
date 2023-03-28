@@ -92,7 +92,7 @@ size_t TreeDecompEfficient(Graph& GA, int order_heuristic=ALL){
 		size_t max_width, mean_width, median_width;
 		auto pi = Ordering(GA, order_heuristic);
 		auto T = sequence<uintE>::uninitialized(n);
-		auto B = sequence<sequence<uintE>>::uninitialized(n);
+		auto B = sequence<sequence<uintE>>(n);
 		auto B_new = sequence<std::set<uintE>>(n);
 		auto bag_size = sequence<size_t>::uninitialized(n);
 		auto bag_size_new = sequence<size_t>::uninitialized(n);
