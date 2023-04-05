@@ -1,19 +1,19 @@
 #include "gbbs/gbbs.h"
-#include "TreeDecomp/ligra_light.h"
+#include "union.h"
 
 namespace gbbs{
 
-template <class Graph>
-inline void CountTriangles(Graph& G, size_t* counts) {
+template <class Graph, class Seq>
+inline void CountTriangles(Graph& G, Seq* counts) {
   	using W = typename Graph::weight_type;
   	debug(std::cout << "Starting counting" << "\n";);
   	size_t n = G.n;
 
   	auto parallel_work = sequence<size_t>::uninitialized(n);
   	{
-    	auto map_f = [&](uintE u, uintE v, W wgh) -> size_t {
-      		return G.get_vertex(v).out_degree();
-    	};
+		auto map_f = [&](uintE u, uintE v, W wgh) -> size_t {
+	  		return G.get_vertex(v).out_degree();
+		};
 		parallel_for(0, n, [&](size_t i) {
 			auto monoid = parlay::plus<size_t>();
 			parallel_work[i] = G.get_vertex(i).out_neighbors().reduce(map_f, monoid);
@@ -24,8 +24,8 @@ inline void CountTriangles(Graph& G, size_t* counts) {
 	size_t block_size = 50000;
 	size_t n_blocks = total_work / block_size + 1;
 	size_t work_per_block = (total_work + n_blocks - 1) / n_blocks;
-	std::cout << "Total work = " << total_work << " nblocks = " << n_blocks
-				<< " work per block = " << work_per_block << "\n";
+	// std::cout << "Total work = " << total_work << " nblocks = " << n_blocks
+				// << " work per block = " << work_per_block << "\n";
 	auto f = [&](uintE u, uintE v, uintE w) {};
 	auto run_intersection = [&](size_t start_ind, size_t end_ind) {
 		for (size_t i = start_ind; i < end_ind; i++) {  // check LEQ
@@ -81,88 +81,79 @@ sequence<uintE> rminfill(Graph& GA){
 }
 
 template <class Seq, class F>
-inline size_t intersect_f_par(Seq* A, uintE a, size_t nA, Seq* B, uintE b, size_t nB, const F& f) {
+inline size_t intersect_f_par(Seq* A, size_t nA, Seq* B, size_t nB, const F& f) {
   auto seqA = gbbs::make_slice<uintE>((uintE *)A, nA);
   auto seqB = gbbs::make_slice<uintE>((uintE *)B, nB);
 
-  auto merge_f = [&](uintE ngh) { f(a, b, ngh); };
-  return intersection::merge(seqA, seqB, merge_f);
+  return intersection::merge(seqA, seqB, f);
 }
 
 template <class Graph>
 sequence<uintE> minfill(Graph& GA){
   using W = typename Graph::weight_type;
   size_t n = GA.n;
-  auto G_copy = sequence<sequence<uintE>>::uninitialized(n);
+
+  auto G_copy = sequence<sequence<uintE>>(n);
   parallel_for(0, n, [&](uintE i){
-    G_copy[i] = sequence<uintE>::uninitialized(GA.get_vertex(i).out_degree());
-    auto map_f = [&](uintE u, uintE v, W w, size_t j){
-        G_copy[i][j] = v;
-    };
-    GA.get_vertex(i).out_neighbors().map_with_index(map_f);
-    parlay::integer_sort_inplace(G_copy[i]);
+	G_copy[i] = sequence<uintE>::uninitialized(GA.get_vertex(i).out_degree());
+	auto map_f = [&](uintE u, uintE v, W w, size_t j){
+		G_copy[i][j] = v;
+	};
+	GA.get_vertex(i).out_neighbors().map_with_index(map_f);
+	parlay::integer_sort_inplace(G_copy[i]); // Required for Union
   });
-  auto order = sequence<uintE>::uninitialized(n); //Final Ordering
-  auto degree = sequence<size_t>::uninitialized(n); //Degree value
-	parallel_for(0, n, kDefaultGranularity, [&](size_t i) { degree[i] = GA.get_vertex(i).out_degree();});
-	auto counts = sequence<size_t>::uninitialized(n); //triangles
-	parallel_for(0, n, kDefaultGranularity, [&](size_t i) { counts[i] = 0; });
-	CountTriangles(GA, counts.begin());
-	auto fill = sequence<size_t>::uninitialized(n); //Fill values
-	parallel_for(0, n, kDefaultGranularity, [&](size_t i) { fill[i] = degree[i]*(degree[i]-1)/2 - counts[i]; });
-  auto isnumbered = sequence<bool>::uninitialized(n);
-  parallel_for(0, n, kDefaultGranularity, [&](size_t i) { isnumbered[i] = 0;});
 
+  // TODO: Lots of sequences, try to improve memory usage.
+	auto order = sequence<uintE>::uninitialized(n); //Final Ordering
+	auto degree = parlay::delayed_seq<intE>(n, [&](size_t i){return (intE)G_copy[i].size();}); //Degree value
+	auto counts = sequence<intE>(n, 0); //triangles
+	CountTriangles(GA, counts.begin()); 
+	parallel_for(0, n, kDefaultGranularity, [&](size_t i){counts[i] = 2*counts[i]; }); // 2*num_triangles - easier to update during minfill
+	auto isnumbered = sequence<bool>(n, 0);
+	auto fill = parlay::delayed_seq<intE>(n, [&](size_t i){//Fill values
+		if (isnumbered[i]){
+			return INT_E_MAX;
+		} else{
+			return degree[i]*(degree[i]-1) - counts[i];
+		}
+	}); 
+	auto false_f = [&](uintE x){return 0;};
+	auto true_f = [&](uintE x){return 1;};
+	auto null_f = [&](uintE x){};
   for(size_t i=0; i<n; i++){
-    auto next = parlay::min_element(fill) - fill.begin();
-    order[i] = next;
-    isnumbered[next] = 1;
-    
-    parallel_for(0, degree[next], [&](size_t j){
-      auto v = G_copy[next][j];
-      if (!isnumbered[v]){
-        G_copy[v] = merge_out(G_copy[v], v, G_copy[next], next);
-				auto added_nghs = G_copy[v].size() - degree[v];
-				auto prev_nghs = degree[next] - added_nghs;
-				counts[v] -= prev_nghs;
-				degree[v] += added_nghs;
-      }
-    });
-
-		// TODO: Use Vertex Subset and Edgemap to parallely recalculate the triangle counts for the vertices
-		// in the first and second neighborhood of next.
-		auto f = [&](uintE u, uintE v, uintE w) {};
-		auto frontier_f = [&](uintE v){
-			counts[v] = 0;
-			for (size_t j=0; j < degree[v]; j++){
-				auto w = G_copy[v][j];
-				counts[v] += intersect_f_par(&G_copy[v], v, degree[v], &G_copy[w], w, degree[w], f);
-			}
-			counts[v]/=2;
-			fill[v] = degree[v]*(degree[v]-1)/2 - counts[v];
-		};
-		auto visited = parlay::tabulate(n, [&](uintE v){return 0;});
-		visited[next] = 1;
-
-		auto edge_f = [&] (uintE u, uintE v) -> bool { 
-			if (gbbs::atomic_compare_and_swap(&visited[v], 0, 1)){
-				frontier_f(v);
-				return 1;
-			}
-			else{
-				return 0;
-			}
-		};
-    auto cond_f = [&] (uintE v) { return !visited[v];};
-    auto frontier_map = ligra::edge_map(G_copy, G_copy, edge_f, cond_f);
-
-    // do the BFS
-    auto frontier = ligra::vertex_subset<uintE>(next);
-		// Update neighbors of next
-		frontier = frontier_map(frontier);
-		// Update neighbors of neighbors of next
-		frontier = frontier_map(frontier);
-    fill[next] = UINT_E_MAX;
+		auto next = parlay::min_element(fill) - fill.begin(); // Obtain minfill element
+		order[i] = next; isnumbered[next] = 1;
+		parallel_for(0, degree[next],[&](size_t j){
+			auto v = G_copy[next][j];
+			auto v_f = [&](uintE x){return (x==v? 0: 1);};
+			auto new_nghs = union_flr_par(G_copy[v], G_copy[next], false_f, false_f, v_f);
+			auto prev_nghs = union_flr_par(G_copy[v], G_copy[next], true_f, false_f, false_f);
+			auto num_new_nghs = new_nghs.size();
+			auto num_prev_nghs = prev_nghs.size();
+			counts[v] = counts[v] - (2*num_prev_nghs); // remove triangles incident on next
+			counts[v] = counts[v] + (num_new_nghs*(num_new_nghs-1) + 2*num_new_nghs*num_prev_nghs); // triangles with 2 new nghs + triangles with 1 new ngh
+			parallel_for(0, degree[v], kDefaultGranularity, [&](size_t k){
+				auto w = G_copy[v][k];
+				if (w != next){
+					if (parlay::find(G_copy[next], w) == G_copy[next].end()){
+						auto temp = union_flr_par(new_nghs, G_copy[w], true_f, false_f, false_f).size();// TODO: Improve this step, just require num, not set
+						gbbs::write_add(&counts[v], 2*temp);
+						gbbs::write_add(&counts[w], temp);
+					}
+					else{
+						auto temp = union_flr_par(prev_nghs, G_copy[w], true_f, false_f, false_f).size();// TODO: Improve this step, just require num, not set
+						gbbs::write_add(&counts[v], num_prev_nghs - 1 - temp);
+					}
+				}
+			});
+		});
+		parallel_for(0, degree[next], [&](size_t j){
+			auto v = G_copy[next][j];
+			auto next_f = [&](uintE x){ return (x==next ? 0 : 1);};
+			auto v_f = [&](uintE x){return (x==v? 0: 1);};
+			auto new_adjv = union_flr_par(G_copy[v], G_copy[next], true_f, next_f, v_f);
+			G_copy[v] = new_adjv;
+		});
   }
   return order;
 }
