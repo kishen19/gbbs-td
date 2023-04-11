@@ -28,10 +28,10 @@ sequence<uintE> mcs(Graph& GA){
 
 // MCS-M Algorithm
 template <class W>
-struct BFS_F {
+struct MCS_M_BFS_F {
   uintE* weights; // max weight in the (best) path from each vertex to src
   uintE* mcs_weights; // Weights from the MCS procedure
-  BFS_F(uintE* _weights, uintE* _mcs_weights) : weights(_weights), mcs_weights(_mcs_weights) {}
+  MCS_M_BFS_F(uintE* _weights, uintE* _mcs_weights) : weights(_weights), mcs_weights(_mcs_weights) {}
   inline bool update(uintE s, uintE d, W w){
     return updateAtomic(s, d, w);
   }
@@ -48,7 +48,7 @@ struct BFS_F {
 };
 
 template <class Graph>
-inline void BFS(Graph& G, uintE src, sequence<uintE>& w) {
+inline void MCS_M_BFS(Graph& G, uintE src, sequence<uintE>& w) {
   using W = typename Graph::weight_type;
   /* Creates Weights array, initialized to all -1, except for src. */
   auto weights = sequence<uintE>::from_function(G.n, [&](size_t i) {return UINT_E_MAX; });
@@ -58,7 +58,7 @@ inline void BFS(Graph& G, uintE src, sequence<uintE>& w) {
   size_t reachable = 0;
   while (!Frontier.isEmpty()) {
     reachable += Frontier.size();
-    Frontier = edgeMap(G, Frontier, BFS_F<W>(weights.begin(), w.begin()), -1,
+    Frontier = edgeMap(G, Frontier, MCS_M_BFS_F<W>(weights.begin(), w.begin()), -1,
                        sparse_blocked | dense_parallel);
   }
   parallel_for(0, G.n, [&](size_t v){
@@ -79,7 +79,7 @@ sequence<uintE> mcs_m(Graph& GA){
     ind--;
 		auto next = parlay::max_element(w)-w.begin();
 		order[ind] = next;
-    BFS(GA, next, w);
+    MCS_M_BFS(GA, next, w);
 		w[next] = 0;
 	}
 	return order;

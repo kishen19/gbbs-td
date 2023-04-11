@@ -7,22 +7,23 @@
 #include "TreeDecomp/orderings/mindeg.h"
 #include "TreeDecomp/orderings/minfill.h"
 #include "TreeDecomp/orderings/mcs.h"
+#include "TreeDecomp/orderings/lexbfs.h"
 
 namespace gbbs {
 
 #define DEGSORT 0
 #define MINDEG 1
-#define RMINDEG 2
+#define DEGENERACY 2
 #define MINFILL 3
 #define RMINFILL 4
-#define LEXBFS 5 // TODO
-#define LEX_M 6 //TODO
+#define LEXBFS 5
+#define LEX_M 6
 #define MCS 7
 #define MCS_M 8
 #define NDD 9 // TODO
 #define ALL 10
 
-std::string names[ALL] = {"Sorted Degrees", "Mindeg", "R-Mindeg", "Minfill", "R-Minfill", "Lex-BFS", "Lex-M", "MCS", "MCS-M", "NDD"};
+std::string names[ALL] = {"Sorted Deg", "Mindeg", "Degeneracy", "Minfill", "R-Minfill", "Lex-BFS", "Lex-M", "MCS", "MCS-M", "NDD"};
 
 void printOut(sequence<size_t> max_width, sequence<double> mean_width, sequence<size_t> median_width, sequence<double> runtimes){
 	std::cout << std::endl;
@@ -34,7 +35,7 @@ void printOut(sequence<size_t> max_width, sequence<double> mean_width, sequence<
 }
 
 template <class Graph>
-sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
+sequence<uintE> Ordering(Graph& GA, int order_heuristic = DEGSORT){
 	auto n = GA.n;
 
 	if (order_heuristic == DEGSORT){
@@ -44,24 +45,22 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = RMINDEG){
 		return order;
 	} else if (order_heuristic == MINDEG){
 		return mindegree(GA);
-	} else if (order_heuristic == RMINDEG){
+	} else if (order_heuristic == DEGENERACY){
 		return DegeneracyOrder(GA);
-	} else if (order_heuristic == MINFILL){ // TODO
+	} else if (order_heuristic == MINFILL){
 		return minfill(GA);
 	} else if (order_heuristic == RMINFILL){
 		return rminfill(GA);
-	} else if (order_heuristic == LEXBFS){ //TODO
-		return mcs(GA);
-	} else if (order_heuristic == LEX_M){ //TODO
-		return mcs(GA);
+	} else if (order_heuristic == LEXBFS){
+		return lexbfs(GA);
+	} else if (order_heuristic == LEX_M){
+		return lex_m(GA);
 	} else if (order_heuristic == MCS){
 		return mcs(GA);
 	} else if (order_heuristic == MCS_M){
 		return mcs_m(GA);
 	} else if (order_heuristic == NDD){ // TODO
 		return DegeneracyOrder(GA);
-	} else{
-		return parlay::tabulate(n, [&](uintE i){return i;});
 	}
 }
 
