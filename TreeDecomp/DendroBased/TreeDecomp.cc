@@ -26,10 +26,9 @@ double TreeDecomp_runner(Graph& G, commandLine P) {
 
 	timer t;
 	t.start();
-	auto width = TreeDecompEfficient(G, heuristic);
+	TreeDecompDendro(G, heuristic);
 	double tt = t.stop();
 
-	std::cout << "### Width: " << width << std::endl;
 	std::cout << "### Running Time: " << tt << std::endl;
 	return tt;
 }
@@ -37,4 +36,4 @@ double TreeDecomp_runner(Graph& G, commandLine P) {
 }  // namespace
 }  // namespace gbbs
 
-generate_main(gbbs::TreeDecomp_runner, false);
+generate_symmetric_weighted_no_init_main(gbbs::TreeDecomp_runner, false);

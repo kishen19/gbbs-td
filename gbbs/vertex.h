@@ -156,6 +156,18 @@ struct uncompressed_neighbors {
                  granularity);
   }
 
+  template <class F>
+  inline void map_weights(F f, bool parallel = true) {
+    size_t granularity =
+        parallel ? kDefaultGranularity : std::numeric_limits<size_t>::max();
+    parallel_for(0, degree,
+                 [&](size_t j) {
+                   const std::tuple<uintE, W>& neighbor = neighbors[j];
+                   neighbors[j] = f(id, std::get<0>(neighbor));
+                 },
+                 granularity);
+  }
+
   // Applies `f` to neighbors of vertex `v`. The difference between this and
   // `map` is that `f` takes an additional argument: the index of the neighbor
   // in `v`'s neighbor list.

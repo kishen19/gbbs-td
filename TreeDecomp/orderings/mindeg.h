@@ -1,5 +1,5 @@
 #include "gbbs/gbbs.h"
-#include "union.h"
+#include "TreeDecomp/common/union.h"
 
 namespace gbbs{
 
@@ -50,8 +50,8 @@ sequence<uintE> mindegree(Graph& GA){
     });
     degree[next] = UINT_E_MAX;
   }
-  auto bagsize = parlay::tabulate(n,[&](uintE i){return G_copy[i].size();});
-  auto mxtw = parlay::reduce_max(bagsize);
+  // auto bagsize = parlay::tabulate(n,[&](uintE i){return G_copy[i].size();});
+  // auto mxtw = parlay::reduce_max(bagsize);
   return order;
 }
 

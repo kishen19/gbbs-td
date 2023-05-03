@@ -1,10 +1,11 @@
 #include "gbbs/gbbs.h"
+#include "TreeDecomp/common/pairing_heap.h"
 
 namespace gbbs{
 
 // Max Cardinality Search (MCS) Algorithm
 template <class Graph>
-sequence<uintE> mcs(Graph& GA){
+sequence<uintE> mcs_old(Graph& GA){
 	using W = typename Graph::weight_type;
 	size_t n = GA.n;
 	auto order = sequence<uintE>::uninitialized(n);
@@ -22,6 +23,36 @@ sequence<uintE> mcs(Graph& GA){
 		};
 		GA.get_vertex(next).out_neighbors().map(map_f);
 		w[next] = 0;
+	}
+	return order;
+}
+
+// Max Cardinality Search (MCS) Algorithm
+template <class Graph>
+sequence<uintE> mcs(Graph& GA){
+	using W = typename Graph::weight_type;
+	size_t n = GA.n;
+
+	auto order = sequence<uintE>::uninitialized(n);
+	auto w = gbbs::new_array_no_init<pairing_heap::pairing_heap_node<uintE>*>(n);
+  parallel_for(0, n, [&](size_t i){
+    w[i] = new pairing_heap::pairing_heap_node<uintE>(n);
+  });
+  auto visited = sequence<bool>(n,0);
+  auto heap = new pairing_heap::pairing_heap<uintE>();
+  heap->create_heap(w, n);
+
+  size_t ind = n;
+	while (ind > 0){
+    ind--;
+		auto next = heap->delete_min();
+		order[ind] = next;
+		auto map_f = [&](uintE u, uintE v, W wgh) {
+      if (visited[v] == 0)
+        heap->decrease_key(w[v], w[v]->key-1);
+		};
+		GA.get_vertex(next).out_neighbors().map(map_f, false);
+		visited[next] = 1;
 	}
 	return order;
 }
@@ -69,7 +100,7 @@ inline void MCS_M_BFS(Graph& G, uintE src, sequence<uintE>& w) {
 
 template <class Graph>
 sequence<uintE> mcs_m(Graph& GA){
-	using W = typename Graph::weight_type;
+	// using W = typename Graph::weight_type;
 	size_t n = GA.n;
 	auto order = sequence<uintE>::uninitialized(n);
 	auto w = sequence<uintE>::uninitialized(n);

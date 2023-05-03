@@ -1,5 +1,5 @@
 #include "gbbs/gbbs.h"
-#include "union.h"
+#include "TreeDecomp/common/union.h"
 
 namespace gbbs{
 
@@ -119,7 +119,7 @@ sequence<uintE> minfill(Graph& GA){
 	}); 
 	auto false_f = [&](uintE x){return 0;};
 	auto true_f = [&](uintE x){return 1;};
-	auto null_f = [&](uintE x){};
+	// auto null_f = [&](uintE x){};
   for(size_t i=0; i<n; i++){
 		auto next = parlay::min_element(fill) - fill.begin(); // Obtain minfill element
 		order[i] = next; isnumbered[next] = 1;

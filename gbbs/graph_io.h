@@ -99,10 +99,19 @@ symmetric_graph<symmetric_vertex, gbbs::empty> read_unweighted_symmetric_graph(
     const char* fname, bool mmap, bool binary, char* bytes = nullptr,
     size_t bytes_size = std::numeric_limits<size_t>::max());
 
+symmetric_graph<symmetric_vertex, intE> read_weighted_no_init_symmetric_graph(
+    const char* fname, bool mmap, bool binary, char* bytes = nullptr,
+    size_t bytes_size = std::numeric_limits<size_t>::max());
+
 asymmetric_graph<asymmetric_vertex, gbbs::empty>
 read_unweighted_asymmetric_graph(
     const char* fname, bool mmap, bool binary, char* bytes = nullptr,
     size_t bytes_size = std::numeric_limits<size_t>::max());
+
+// asymmetric_graph<asymmetric_vertex, gbbs::intE>
+// read_unweighted_asymmetric_graph(
+//     const char* fname, bool mmap, bool binary, char* bytes = nullptr,
+//     size_t bytes_size = std::numeric_limits<size_t>::max());
 
 std::tuple<char*, size_t> parse_compressed_graph(const char* fname, bool mmap);
 

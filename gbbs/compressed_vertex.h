@@ -63,6 +63,16 @@ struct compressed_neighbors {
   }
 
   template <class F>
+  inline void map_weights(F& f, bool parallel = true) {
+    // auto T = [&](const uintE& src, const uintE& target, const W& weight,
+    //              const uintT& edgeNumber) {
+    //   f(src, target, weight);
+    //   return true;
+    // };
+    // C::template decode<W>(T, neighbors, id, degree, parallel);
+  }
+
+  template <class F>
   inline void map_with_index(F& f, bool parallel = true) {
     auto T = [&](const uintE& src, const uintE& target, const W& weight,
                  const uintT& edgeNumber) {

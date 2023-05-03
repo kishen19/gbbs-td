@@ -491,6 +491,12 @@ auto map(Seq const& A, UnaryFunc f, flags fl = no_flag) -> sequence<OT> {
                                      [&](size_t i) { return f(A[i]); });
 }
 
+template <class OT, class Seq, class UnaryFunc>
+auto map_weights(Seq const& A, UnaryFunc f, flags fl = no_flag) -> sequence<OT> {
+  return sequence<OT>::from_function(A.size(),
+                                     [&](size_t i) { return f(A[i]); });
+}
+
 template <class In_Seq, class F>
 auto filter_index(In_Seq const& In, F f, flags fl = no_flag)
     -> sequence<typename In_Seq::value_type> {

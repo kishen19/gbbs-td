@@ -321,3 +321,32 @@
       run_app(G, APP, mutates, rounds)                                  \
     }                                                                   \
   }
+
+/* Macro to generate binary for weighted graph applications that can ingest
+ * either symmetric or asymmetric graph inputs */
+#define generate_symmetric_weighted_no_init_main(APP, mutates)                \
+  int main(int argc, char* argv[]) {                                          \
+    gbbs::commandLine P(argc, argv, " [-s] <inFile>");                        \
+    char* iFile = P.getArgument(0);                                           \
+    bool symmetric = P.getOptionValue("-s");                                  \
+    if (!symmetric) {                                                         \
+      std::cout                                                               \
+          << "# The application expects the input graph to be symmetric (-s " \
+             "flag)."                                                         \
+          << std::endl;                                                       \
+      std::cout << "# Please run on a symmetric input." << std::endl;         \
+    }                                                                         \
+    bool compressed = P.getOptionValue("-c");                                 \
+    bool mmap = P.getOptionValue("-m");                                       \
+    bool binary = P.getOptionValue("-b");                                     \
+    size_t rounds = P.getOptionLongValue("-rounds", 3);                       \
+    if (compressed) {                                                         \
+      auto G = gbbs::gbbs_io::read_compressed_symmetric_graph<gbbs::intE>(    \
+          iFile, mmap);                                                       \
+      run_app(G, APP, mutates, rounds)                                        \
+    } else {                                                                  \
+      auto G = gbbs::gbbs_io::read_weighted_no_init_symmetric_graph(          \
+          iFile, mmap, binary);                                               \
+      run_app(G, APP, mutates, rounds)                                        \
+    }                                                                         \
+  }

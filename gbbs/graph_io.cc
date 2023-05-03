@@ -125,6 +125,39 @@ symmetric_graph<symmetric_vertex, gbbs::empty> read_unweighted_symmetric_graph(
       (std::tuple<uintE, gbbs::empty>*)edges);
 }
 
+symmetric_graph<symmetric_vertex, intE> read_weighted_no_init_symmetric_graph(
+    const char* fname, bool mmap, bool binary, char* bytes, size_t bytes_size) {
+  size_t n, m;
+  uintT* offsets;
+  uintE* edges;
+  std::tuple<uintE, intE>* edges_new;
+  std::tie(n, m, offsets, edges) =
+      parse_unweighted_graph(fname, mmap, binary, bytes, bytes_size);
+
+  auto v_data = gbbs::new_array_no_init<vertex_data>(n);
+  parallel_for(0, n, [&](size_t i) {
+    v_data[i].offset = offsets[i];
+    v_data[i].degree = offsets[i + 1] - v_data[i].offset;
+  });
+  edges_new = gbbs::new_array_no_init<std::tuple<uintE, intE>>(m);
+  parallel_for(0, m, [&](size_t i){
+    edges_new[i] = std::make_tuple(edges[i],0);
+  });
+  gbbs::free_array(edges, m);
+  
+  if (!binary) {
+    gbbs::free_array(offsets, n + 1);
+  }
+
+  return symmetric_graph<symmetric_vertex, intE>(
+      v_data, n, m,
+      [=]() {
+        gbbs::free_array(v_data, n);
+        if (!binary) gbbs::free_array(edges_new, m);
+      },
+      edges_new);
+}
+
 asymmetric_graph<asymmetric_vertex, gbbs::empty>
 read_unweighted_asymmetric_graph(const char* fname, bool mmap, char* bytes,
                                  size_t bytes_size) {

@@ -1,16 +1,19 @@
 #pragma once
 
 #include "gbbs/gbbs.h"
-#include "gavril.h"
+#include "TreeDecomp/common/gavril.h"
 #include <set>
 
 namespace gbbs{
 
 template <class Graph>
 size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uintE>>& B, sequence<uintE>& T, sequence<size_t>& bag_size, sequence<std::set<uintE>>& B_new, sequence<size_t>& bag_size_new){
-    using W = typename Graph::weight_type;
+    // using W = typename Graph::weight_type;
 	size_t n = GA.n;
+    timer t;
+    t.start();
     GavrilTreeDecomp(GA, pi, B, T, bag_size);
+    t.next("Gavril Time");
 	auto pi_inv = sequence<uintE>::uninitialized(n+1);
     parallel_for(0, n, [&](size_t i) {pi_inv[pi[i]] = i;});
     pi_inv[n] = n;
@@ -20,6 +23,7 @@ size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uin
             B_new[i].insert(B[i][j]);
         }
     });
+    t.next("TD Init time");
     for (size_t i=0; i<n; i++){ //index i
         auto v = pi[i]; // vertex at index i
         if (bag_size_new[v]>0){
@@ -39,6 +43,7 @@ size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uin
             }
         }
     }
+    t.next("TD Time");
     return parlay::reduce_max(bag_size_new);
 }
 

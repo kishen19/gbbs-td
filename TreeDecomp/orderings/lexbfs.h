@@ -148,7 +148,7 @@ inline void LEX_M_BFS(Graph& G, uintE src, sequence<uintE>& w) {
 
 template <class Graph>
 sequence<uintE> lex_m(Graph& GA){
-	using W = typename Graph::weight_type;
+	// using W = typename Graph::weight_type;
 	size_t n = GA.n;
 	auto order = sequence<uintE>::uninitialized(n);
 	auto w = sequence<uintE>::uninitialized(n);
