@@ -24,14 +24,12 @@ void TreeDecompDendro(Graph& GA, int order_heuristic=ALL){
 
     // Step 1: Computing Elimination Order
     auto pi = Ordering(GA, order_heuristic);
-    // for (size_t i=0; i<n; i++){
-    //     std::cout << pi[i] << " ";
-    // }
-    // std::cout << std::endl;
+    auto pi_inv = sequence<uintE>::uninitialized(n);
+    parallel_for(0, n, [&](size_t i) {pi_inv[pi[i]] = i;});
     t.next("Ordering Time");
 
     // Step 2: Assign weights to edges
-    reassign_weights(GA, pi);
+    reassign_weights(GA, pi_inv);
     t.next("Reassigning Weights Time");
 
     // Step 3: Compute MST
@@ -39,11 +37,11 @@ void TreeDecompDendro(Graph& GA, int order_heuristic=ALL){
     t.next("MST Time");
 
     // Step 4: Compute Dendrogram
-    auto T = DendrogramSeqUF(mst_edges, n, pi);
+    auto T = DendrogramSeqUF(mst_edges, n, pi_inv);
     t.next("Dendro Time");
-    for (size_t i=0; i< n; i++){
-        std::cout << i << ": " << T[i] << std::endl;
-    }
+    // for (size_t i=0; i< n; i++){
+    //     std::cout << i << ": " << T[i] << std::endl;
+    // }
     // double tt = t.total_time();
     // max_width = tw;
     // mean_width = (double)parlay::reduce(bag_size_new)/n;

@@ -6,11 +6,8 @@
 namespace gbbs {
 
 template <class Seq>
-sequence<uintE> DendrogramSeqUF(Seq& mst_edges, size_t& n, sequence<uintE>& pi){
+sequence<uintE> DendrogramSeqUF(Seq& mst_edges, size_t& n, sequence<uintE>& pi_inv){
 	size_t m = mst_edges.size();
-	auto pi_inv = sequence<uintE>::uninitialized(n);
-    parallel_for(0, n, [&](size_t i) {pi_inv[pi[i]] = i;});
-	
 	timer t;
 	t.start();
 
@@ -33,18 +30,26 @@ sequence<uintE> DendrogramSeqUF(Seq& mst_edges, size_t& n, sequence<uintE>& pi){
 	// Step 2: Applying Union Find to the sorted sequence of edges
 	auto uf = simple_union_find::SimpleUnionAsyncStruct(n);
 	auto rep = sequence<uintE>::from_function(n, [&](uintE i){return i;});
-	auto parents = sequence<uintE>::from_function(n, [&](size_t i){return i;}); //Output Parent Array
+	auto parents = sequence<uintE>::from_function(n, [&](size_t i){return n;}); //Output Parent Array
 	auto heights = sequence<uintE>(n,0); // Heights of every node in the dendrogram
 
 	for(size_t ind = 0; ind < m; ind++){
 		auto i = indices[ind];
-		uintE u,v;
+		uintE u,v,w;
 		u = std::get<0>(mst_edges[i]);
 		v = std::get<1>(mst_edges[i]);
-		auto w = std::get<2>(mst_edges[i]);
+		if (pi_inv[u] < pi_inv[v]){
+			w = v;
+		} else{
+			w = u;
+		}
 		u = simple_union_find::find_compress(u, uf.parents);
 		v = simple_union_find::find_compress(v, uf.parents);
-		parents[rep[u]] = w; parents[rep[v]] = w;
+		if (w == rep[u]){
+			parents[rep[v]] = w;
+		} else{
+			parents[rep[u]] = w;
+		}
 		heights[u] = std::max(heights[u], heights[v])+1; heights[v] = heights[u];
 		uf.unite(u,v);
 		rep[u] = w; rep[v] = w;

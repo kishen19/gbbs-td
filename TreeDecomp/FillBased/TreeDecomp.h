@@ -37,14 +37,15 @@ void TreeDecompFill(Graph& GA, int order_heuristic=ALL){
     auto TD = GavrilEdges(F_pi, pi, pi_inv);
     t.next("Gavril Time");
 
-    // double tt = t.total_time();
-    // max_width = parlay::reduce_max(TD->bag_size);
-    // mean_width = (double)parlay::reduce(TD->bag_size)/n;
-    // median_width = *parlay::kth_smallest(TD->bag_size,n/2);
-    for (size_t i=0; i< n; i++){
-        std::cout << i << ": " << TD->parent[i] << std::endl;
-    }
-    // printOut(order_heuristic, max_width, mean_width, median_width, tt);
+    // for (size_t i=0; i< n; i++){
+    //     std::cout << i << ": " << TD->parent[i] << std::endl;
+    // }
+
+    double tt = t.total_time();
+    max_width = parlay::reduce_max(TD->bag_size);
+    mean_width = (double)parlay::reduce(TD->bag_size)/n;
+    median_width = max_width;//*parlay::kth_smallest(TD->bag_size, n/2);
+    printOut(order_heuristic, max_width, mean_width, median_width, tt);
     return;
 }
 

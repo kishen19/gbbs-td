@@ -28,10 +28,10 @@ inline void printOut(int& heuristic, size_t& max_width, double& mean_width, size
 }
 
 template <class Graph>
-void reassign_weights(Graph& G, sequence<uintE>& pi){
+void reassign_weights(Graph& G, sequence<uintE>& pi_inv){
 	auto n = G.n;
 	auto f = [&](const uintE& u, const uintE& v){
-		return std::make_tuple(v, std::max(pi[u], pi[v]));
+		return std::make_tuple(v, std::max(pi_inv[u], pi_inv[v]));
 	};
 	parallel_for(0, n, [&](size_t i){
 		G.get_vertex(i).out_neighbors().map_weights(f);
