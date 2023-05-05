@@ -48,21 +48,21 @@ sequence<uintE> Ordering(Graph& GA, int order_heuristic = DEGSORT){
 		parlay::integer_sort_inplace(order, sort_f);
 		return order;
 	} else if (order_heuristic == MINDEG){
-		return mindegree(GA);
+		return mindeg::mindeg(GA);
 	} else if (order_heuristic == DEGENERACY){
 		return DegeneracyOrder(GA);
 	} else if (order_heuristic == MINFILL){
-		return minfill(GA);
+		return minfill::minfill(GA);
 	} else if (order_heuristic == RMINFILL){
-		return rminfill(GA);
+		return minfill::rminfill(GA);
 	} else if (order_heuristic == LEXBFS){
-		return lexbfs(GA);
+		return lex::lexbfs(GA);
 	} else if (order_heuristic == LEX_M){
-		return lex_m(GA);
+		return lex::lex_m(GA);
 	} else if (order_heuristic == MCS){
-		return mcs_old(GA);
+		return mcs::mcs(GA);
 	} else if (order_heuristic == MCS_M){
-		return mcs_m(GA);
+		return mcs::mcs_m(GA);
 	// } else if (order_heuristic == NDD){ // TODO
 	// 	return DegeneracyOrder(GA);
 	} else{

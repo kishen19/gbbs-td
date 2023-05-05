@@ -12,7 +12,7 @@ size_t EfficientTreeDecomp(Graph& GA, sequence<uintE>& pi, sequence<sequence<uin
 	size_t n = GA.n;
     timer t;
     t.start();
-    GavrilTreeDecomp(GA, pi, B, T, bag_size);
+    GavrilSimple(GA, pi, B, T, bag_size);
     t.next("Gavril Time");
 	auto pi_inv = sequence<uintE>::uninitialized(n+1);
     parallel_for(0, n, [&](size_t i) {pi_inv[pi[i]] = i;});

@@ -1,7 +1,7 @@
-#include "gbbs/gbbs.h"
 #include "TreeDecomp/common/union.h"
 
 namespace gbbs{
+namespace minfill{
 
 template <class Graph, class Seq>
 inline void CountTriangles(Graph& G, Seq* counts) {
@@ -158,4 +158,5 @@ sequence<uintE> minfill(Graph& GA){
   return order;
 }
 
+}
 }

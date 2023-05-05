@@ -24,10 +24,10 @@ void TreeDecompDendro(Graph& GA, int order_heuristic=ALL){
 
     // Step 1: Computing Elimination Order
     auto pi = Ordering(GA, order_heuristic);
-    for (size_t i=0; i<n; i++){
-        std::cout << pi[i] << " ";
-    }
-    std::cout << std::endl;
+    // for (size_t i=0; i<n; i++){
+    //     std::cout << pi[i] << " ";
+    // }
+    // std::cout << std::endl;
     t.next("Ordering Time");
 
     // Step 2: Assign weights to edges
@@ -36,16 +36,19 @@ void TreeDecompDendro(Graph& GA, int order_heuristic=ALL){
 
     // Step 3: Compute MST
     auto mst_edges = MinimumSpanningForest_boruvka::MinimumSpanningForest(GA);
+    t.next("MST Time");
 
     // Step 4: Compute Dendrogram
     auto T = DendrogramSeqUF(mst_edges, n, pi);
+    t.next("Dendro Time");
     for (size_t i=0; i< n; i++){
         std::cout << i << ": " << T[i] << std::endl;
     }
-
+    // double tt = t.total_time();
     // max_width = tw;
     // mean_width = (double)parlay::reduce(bag_size_new)/n;
     // median_width = *parlay::kth_smallest(bag_size_new,n/2);
+    // printOut(order_heuristic, max_width, mean_width, median_width, tt);
     return;
 }
 

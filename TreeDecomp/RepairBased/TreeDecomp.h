@@ -34,9 +34,10 @@ void TreeDecompRepair(Graph& GA, int order_heuristic=ALL){
 	max_width = tw;
 	mean_width = (double)parlay::reduce(bag_size_new)/n;
 	median_width = *parlay::kth_smallest(bag_size_new,n/2);
-
-	printOut(order_heuristic, max_width, mean_width, median_width, tt);
-
+	for (size_t i=0; i< n; i++){
+        std::cout << i << ": " << T[i] << std::endl;
+    }
+	// printOut(order_heuristic, max_width, mean_width, median_width, tt);
 	return;
 }
 

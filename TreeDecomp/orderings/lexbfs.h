@@ -1,8 +1,7 @@
 #pragma once
 
-#include "gbbs/gbbs.h"
-
 namespace gbbs{
+namespace lex{
 
 // Lex BFS (Lex-BFS) Algorithm
 struct queue_cell;
@@ -134,9 +133,9 @@ inline void LEX_M_BFS(Graph& G, uintE src, sequence<uintE>& w) {
   weights[src] = 0;
 
   vertexSubset Frontier(G.n, src);
-  size_t reachable = 0;
+  // size_t reachable = 0;
   while (!Frontier.isEmpty()) {
-    reachable += Frontier.size();
+    // reachable += Frontier.size();
     Frontier = edgeMap(G, Frontier, LEX_M_BFS_F<W>(weights.begin(), w.begin()), -1,
                        sparse_blocked | dense_parallel);
   }
@@ -180,4 +179,5 @@ sequence<uintE> lex_m(Graph& GA){
 	return order;
 }
 
-}
+} // namespace lex
+} // namespace gbbs

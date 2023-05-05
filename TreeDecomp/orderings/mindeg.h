@@ -1,11 +1,11 @@
-#include "gbbs/gbbs.h"
 #include "TreeDecomp/common/union.h"
 
 namespace gbbs{
+namespace mindeg{
 
 // MinDegree
 template <class Graph>
-sequence<uintE> mindegree(Graph& GA){
+sequence<uintE> mindeg(Graph& GA){
   using W = typename Graph::weight_type;
   size_t n = GA.n;
   // if (G_copy == nullptr){
@@ -55,4 +55,5 @@ sequence<uintE> mindegree(Graph& GA){
   return order;
 }
 
-}
+} // namespace mindeg
+} // namespace gbbs
